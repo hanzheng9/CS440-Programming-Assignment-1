@@ -38,10 +38,16 @@ public class PacmanAgent
     @Override
     public Set<PelletVertex> getOutoingNeighbors(final PelletVertex vertex,
                                                  final GameView game)
-    {
-        return null;
-    }
+   {
 
+        Set<PelletVertex> coords = new HashSet<>();
+        String[] directions =  {"NORTH", "SOUTH", "EAST", "WEST"};
+         for(int i = 0; i < 4; i++){
+            if(game.isLegalMove(this.getPacmanId(), this.makeMove(this.getPacmanId(), Action.valueOf(directions[i])))){
+            }
+        }
+        return coords;
+    }
     @Override
     public float getEdgeWeight(final PelletVertex src,
                                final PelletVertex dst)
