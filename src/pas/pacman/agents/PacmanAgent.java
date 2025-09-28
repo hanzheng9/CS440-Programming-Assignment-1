@@ -3,7 +3,9 @@ package src.pas.pacman.agents;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Queue;
 // SYSTEM IMPORTS
 import java.util.Random;
 import java.util.Set;
@@ -23,9 +25,7 @@ public class PacmanAgent
     extends SearchAgent
     implements ThriftyPelletEater
 {
-
     private final Random random;
-    private Coordinate goal;
 
     public PacmanAgent(int myUnitId,
                        int pacmanId,
@@ -41,13 +41,7 @@ public class PacmanAgent
     public Set<PelletVertex> getOutoingNeighbors(final PelletVertex vertex,
                                                  final GameView game)
     {
-        Set<PelletVertex> coords = new HashSet<>();
-        String[] directions =  {"NORTH", "SOUTH", "EAST", "WEST"};
-         for(int i = 0; i < 4; i++){
-            if(game.isLegalMove(this.getPacmanId(), this.makeMove(this.getPacmanId(), Action.valueOf(directions[i])))){
-            }
-        }
-        return coords;
+        return null;
     }
 
     @Override
@@ -61,9 +55,7 @@ public class PacmanAgent
     public float getHeuristic(final PelletVertex src,
                               final GameView game)
     {
-        int dx = Math.abs(src.getX() - goal.getX());
-        int dy = Math.abs(src.getY() - goal.getY());
-        return dx + dy;
+        return 1f;
     }
 
     @Override
@@ -76,7 +68,21 @@ public class PacmanAgent
     public Set<Coordinate> getOutgoingNeighbors(final Coordinate src,
                                                 final GameView game)
     {
-        return null;
+        Set<Coordinate> coords = new HashSet<>();
+        final int[] x = {0, 1, 0, -1};
+        final int[] y = {-1, 0, 1, 0};
+
+        for(int i = 0; i < 4; i++){
+            int nx = src.getXCoordinate() + x[i];
+            int ny = src.getYCoordinate() + y[i];
+            Coordinate next = new Coordinate(nx, ny);
+            if(game.isLegalPacmanMove(next, this.makeMove(game))){
+                coords.add(next);
+            }
+        }
+        System.out.println(coords.toString());
+
+        return coords;
     }
 
     @Override
@@ -84,30 +90,36 @@ public class PacmanAgent
                                         final Coordinate tgt,
                                         final GameView game)
     {
-        this.goal = tgt;
-        class Node 
-        {
-            final Coordinate c;
-            final float cost;    
-            final Node parent;
+        Queue<Path<Coordinate>> paths = new LinkedList<>();
+        Set<Coordinate> visited = new HashSet<>();
+        Set<Coordinate> coords = new HashSet<>();
+        Path<Coordinate> start = new Path<>(src, 0f, null);
+        
+        paths.add(start);
+        visited.add(src);
 
-            Node(Coordinate c, float cost, Node parent) {
-                this.c = c; 
-                this.cost = cost; 
-                this.parent = parent;
+        while(!paths.isEmpty())
+        {
+            Path<Coordinate> current = paths.remove();
+            Coordinate at = current.getDestination();
+
+            if(current.getDestination().equals(tgt)) 
+            {
+                return current;
+            }
+
+            coords = getOutgoingNeighbors(at, game);
+
+            for(Coordinate coord: coords)
+            {
+                if (visited.add(coord)) 
+                {
+                    paths.add(new Path<>(coord, 1f, current));
+                }
             }
         }
-        Comparator<Node> nodeComparator = new Comparator<Node>() 
-        {
-            @Override
-            public int compare(Node a, Node b) {
-                double totalA = a.cost + getHeuristic(a.c, tgt);
-                double totalB = b.cost + getHeuristic(b.c, tgt);
-                return Double.compare(totalA, totalB);
-            }
-        };
-        PriorityQueue<Node> open = new PriorityQueue<>(nodeComparator);
-        return null;
+
+        return new Path<>(src, 0f, null);
     }
 
     @Override
