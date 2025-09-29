@@ -9,7 +9,7 @@ import java.util.Queue;
 // SYSTEM IMPORTS
 import java.util.Random;
 import java.util.Set;
-
+import java.util.Stack;
 
 // JAVA PROJECT IMPORTS
 import edu.bu.pas.pacman.agents.Agent;
@@ -94,7 +94,7 @@ public class PacmanAgent
         Set<Coordinate> visited = new HashSet<>();
         Set<Coordinate> coords = new HashSet<>();
         Path<Coordinate> start = new Path<>(src, 0f, null);
-        
+
         paths.add(start);
         visited.add(src);
 
@@ -125,7 +125,17 @@ public class PacmanAgent
     @Override
     public void makePlan(final GameView game)
     {
+        Coordinate src = game.getEntity(getMyEntityId()).getCurrentCoordinate(); // getting the source
+        Path<Coordinate> path = graphSearch(src, getTargetCoordinate(), game);
+        Stack<Coordinate> stack = new Stack<>();
 
+        while(path!=null) // turning into stack
+        {
+            stack.push(path.getDestination());
+            path = path.getParentPath();
+        }
+
+        setPlanToGetToTarget(stack);
     }
 
     @Override
