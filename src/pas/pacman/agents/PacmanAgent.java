@@ -79,12 +79,19 @@ public class PacmanAgent
         for(int i = 0; i < 4; i++){
             int nx = src.getXCoordinate() + x[i];
             int ny = src.getYCoordinate() + y[i];
+            System.out.println(i);
+            System.out.println(src.toString());
             Coordinate next = new Coordinate(nx, ny);
+            System.out.println(next.toString());
+            System.out.println("\n");
             if(game.isLegalPacmanMove(src, directions[i])){
+                System.out.println(1);
+                if(nx >= 0 && ny >=0){
+
                 coords.add(next);
             }
+            }
         }
-        System.out.println(coords.toString());
 
         return coords;
     }
