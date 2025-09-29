@@ -1,6 +1,7 @@
 package src.pas.pacman.agents;
 
 
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -68,15 +69,18 @@ public class PacmanAgent
     public Set<Coordinate> getOutgoingNeighbors(final Coordinate src,
                                                 final GameView game)
     {
+
+  
         Set<Coordinate> coords = new HashSet<>();
-        final int[] x = {0, 1, 0, -1};
-        final int[] y = {-1, 0, 1, 0};
+        final Action[] directions = {Action.NORTH, Action.EAST, Action.SOUTH, Action.WEST};
+        int[] x = {0, 1, 0, -1};
+        int[] y = {1, 0, -1, 0};
 
         for(int i = 0; i < 4; i++){
             int nx = src.getXCoordinate() + x[i];
             int ny = src.getYCoordinate() + y[i];
             Coordinate next = new Coordinate(nx, ny);
-            if(game.isLegalPacmanMove(next, this.makeMove(game))){
+            if(game.isLegalPacmanMove(src, directions[i])){
                 coords.add(next);
             }
         }
