@@ -74,16 +74,19 @@ public class PacmanAgent
         Set<Coordinate> coords = new HashSet<>();
         final Action[] directions = {Action.NORTH, Action.EAST, Action.SOUTH, Action.WEST};
         int[] x = {0, 1, 0, -1};
-        int[] y = {1, 0, -1, 0};
+        int[] y = {-1, 0, 1, 0};
+        int i = 0;
 
-        for(int i = 0; i < 4; i++){
+        for(Action dir: directions){
             int nx = src.getXCoordinate() + x[i];
             int ny = src.getYCoordinate() + y[i];
             Coordinate next = new Coordinate(nx, ny);
-            if(game.isLegalPacmanMove(src, directions[i])&& game.isInBounds(next)){
+            if(game.isLegalPacmanMove(src, dir)&& game.isInBounds(next)){
                 coords.add(next);
             }
-    }
+            i++;
+        }
+
         return coords;
     }
 
