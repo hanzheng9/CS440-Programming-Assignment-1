@@ -2,6 +2,7 @@ package src.pas.pacman.agents;
 
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -42,7 +43,21 @@ public class PacmanAgent
     public Set<PelletVertex> getOutoingNeighbors(final PelletVertex vertex,
                                                  final GameView game)
     {
-        return null;
+        Set<PelletVertex> neighbors = new HashSet<>();
+        final Set<Coordinate> pellets = vertex.getRemainingPelletCoordinates();
+
+        if(pellets==null || pellets.isEmpty()) 
+        {
+            return neighbors;
+        }
+
+        for(Coordinate pellet: pellets) 
+        {
+            PelletVertex temp = vertex.removePellet(pellet);
+            neighbors.add(temp);
+        }
+
+        return neighbors;
     }
 
     @Override
@@ -69,8 +84,6 @@ public class PacmanAgent
     public Set<Coordinate> getOutgoingNeighbors(final Coordinate src,
                                                 final GameView game)
     {
-
-  
         Set<Coordinate> coords = new HashSet<>();
         final Action[] directions = {Action.NORTH, Action.EAST, Action.SOUTH, Action.WEST};
         int[] x = {0, 1, 0, -1};
