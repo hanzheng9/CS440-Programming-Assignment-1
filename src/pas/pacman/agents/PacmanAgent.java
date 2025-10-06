@@ -4,8 +4,10 @@ package src.pas.pacman.agents;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 // SYSTEM IMPORTS
@@ -64,6 +66,7 @@ public class PacmanAgent
     public float getEdgeWeight(final PelletVertex src,
                                final PelletVertex dst)
     {
+         
         return 1f;
     }
 
@@ -71,8 +74,42 @@ public class PacmanAgent
     public float getHeuristic(final PelletVertex src,
                               final GameView game)
     {
+        ////NOT SURE IF CORRECT JUST TRYING STUFF I HAVE NO EMOTIONAL ATTATCHMENT//////
+        // Set<Coordinate> pellets = src.getRemainingPelletCoordinates(); 
+        // if(pellets==null || pellets.isEmpty()) 
+        //     {
+        //     return 0f;
+        //     }
+        // Set<Coordinate> nodes = new HashSet<>(pellets);
+        // Coordinate start = src.getPacmanCoordinate();
+        // nodes.add(start);
+        // Set<Coordinate> tree = new HashSet<>();
+        // Map<Coordinate, Double> minEdge = new HashMap<>();
+        // for (Coordinate c : nodes) {
+        // minEdge.put(c, Double.POSITIVE_INFINITY);
+        // }
+        // minEdge.put(start, 0.0);
+        // double total = 0;
+        // while (tree.size() < nodes.size()) {
+        // Coordinate best = null;
+        // double bestDist = Double.POSITIVE_INFINITY;
+
+        // for (Coordinate c : nodes) {
+        //     if (!tree.contains(c) && minEdge.get(c) < bestDist) {
+        //         bestDist = minEdge.get(c);
+        //         best = c;
+        //     }
+        // }
+
+
+
+
+
+
+        
         return 1f;
     }
+
 
     @Override
     public Path<PelletVertex> findPathToEatAllPelletsTheFastest(final GameView game)
