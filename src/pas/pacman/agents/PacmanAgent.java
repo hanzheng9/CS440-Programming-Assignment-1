@@ -66,8 +66,34 @@ public class PacmanAgent
     public float getEdgeWeight(final PelletVertex src,
                                final PelletVertex dst)
     {
-         
-        return 1f;
+        final Set<Coordinate> s = src.getRemainingPelletCoordinates();
+        final Set<Coordinate> d = dst.getRemainingPelletCoordinates();
+        final Coordinate pac = src.getPacmanCoordinate();
+        Coordinate removed = null;
+        int diff = 0;
+        float w;
+
+        for(Coordinate c: s) 
+        {
+            if(!d.contains(c)) 
+            {
+                removed = c;
+                diff++;
+                if(diff>1) // diff needs to be 1
+                {
+                    break; 
+                }
+            }
+        }
+
+        if(diff!=1 || removed==null) 
+        {
+            return Float.POSITIVE_INFINITY;
+        }
+
+        w = Math.abs(pac.getXCoordinate()-removed.getXCoordinate()) + Math.abs(pac.getYCoordinate()-removed.getYCoordinate());
+
+        return w;
     }
 
     @Override
