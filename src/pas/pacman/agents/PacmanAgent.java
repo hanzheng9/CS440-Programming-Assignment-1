@@ -79,7 +79,7 @@ public class PacmanAgent
             {
                 removed = c;
                 diff++;
-                if(diff>1) // diff needs to be 1
+                if(diff == 1) // diff needs to be 1
                 {
                     break; 
                 }
@@ -100,41 +100,55 @@ public class PacmanAgent
     public float getHeuristic(final PelletVertex src,
                               final GameView game)
     {
-        ////NOT SURE IF CORRECT JUST TRYING STUFF I HAVE NO EMOTIONAL ATTATCHMENT//////
-        // Set<Coordinate> pellets = src.getRemainingPelletCoordinates(); 
-        // if(pellets==null || pellets.isEmpty()) 
-        //     {
-        //     return 0f;
-        //     }
-        // Set<Coordinate> nodes = new HashSet<>(pellets);
-        // Coordinate start = src.getPacmanCoordinate();
-        // nodes.add(start);
-        // Set<Coordinate> tree = new HashSet<>();
-        // Map<Coordinate, Double> minEdge = new HashMap<>();
-        // for (Coordinate c : nodes) {
-        // minEdge.put(c, Double.POSITIVE_INFINITY);
-        // }
-        // minEdge.put(start, 0.0);
-        // double total = 0;
-        // while (tree.size() < nodes.size()) {
-        // Coordinate best = null;
-        // double bestDist = Double.POSITIVE_INFINITY;
+        Set<Coordinate> pellets = src.getRemainingPelletCoordinates(); 
+        if(pellets==null || pellets.isEmpty()) 
+            {
+            return 0f;
+            }
+        Set<Coordinate> nodes = new HashSet<>(pellets);
+        Coordinate start = src.getPacmanCoordinate();
+        nodes.add(start);
+        Set<Coordinate> tree = new HashSet<>();
+        Map<Coordinate, Double> minEdge = new HashMap<>();
+        for (Coordinate c : nodes) {
+        minEdge.put(c, Double.POSITIVE_INFINITY);
+        }
+        minEdge.put(start, 0.0);
+        float total = 0;
+        while (tree.size() < nodes.size()) {
+        Coordinate best = null;
+        double bestDist = Double.POSITIVE_INFINITY;
 
-        // for (Coordinate c : nodes) {
-        //     if (!tree.contains(c) && minEdge.get(c) < bestDist) {
-        //         bestDist = minEdge.get(c);
-        //         best = c;
-        //     }
-        // }
-
-
-
-
-
-
-        
-        return 1f;
+        for (Coordinate c : nodes) {
+            if (!tree.contains(c) && minEdge.get(c) < bestDist) {
+                bestDist = minEdge.get(c);
+                best = c;
+            }
+        }
+            if (best == null) break;
+    tree.add(best);
+    total += bestDist;
+    for (Coordinate neighbor : nodes) {
+        if (!tree.contains(neighbor)) {
+            double dist = Math.abs(best.getXCoordinate() - neighbor.getXCoordinate()) + 
+                            Math.abs(best.getYCoordinate() - neighbor.getYCoordinate());
+            
+            if (dist < minEdge.get(neighbor)) {
+                minEdge.put(neighbor, dist);
+            }
+        }
     }
+}
+
+
+
+
+
+       
+        
+        return total;
+    }
+
 
 
     @Override
