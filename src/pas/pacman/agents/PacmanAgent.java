@@ -79,10 +79,18 @@ public class PacmanAgent
             {
                 removed = c;
                 diff++;
-                if(diff == 1) // diff needs to be 1
+                if(diff>1) // diff needs to be 1
                 {
-                    break; 
+                    break;  
                 }
+            }
+        }
+
+        for(Coordinate c: d) 
+        {
+            if (!s.contains(c))
+            {
+                return Float.POSITIVE_INFINITY;
             }
         }
 
@@ -116,36 +124,29 @@ public class PacmanAgent
         minEdge.put(start, 0.0);
         float total = 0;
         while (tree.size() < nodes.size()) {
-        Coordinate best = null;
-        double bestDist = Double.POSITIVE_INFINITY;
+            Coordinate best = null;
+            double bestDist = Double.POSITIVE_INFINITY;
 
-        for (Coordinate c : nodes) {
-            if (!tree.contains(c) && minEdge.get(c) < bestDist) {
-                bestDist = minEdge.get(c);
-                best = c;
+            for (Coordinate c : nodes) {
+                if (!tree.contains(c) && minEdge.get(c) < bestDist) {
+                    bestDist = minEdge.get(c);
+                    best = c;
+                }
             }
-        }
             if (best == null) break;
-    tree.add(best);
-    total += bestDist;
-    for (Coordinate neighbor : nodes) {
-        if (!tree.contains(neighbor)) {
-            double dist = Math.abs(best.getXCoordinate() - neighbor.getXCoordinate()) + 
-                            Math.abs(best.getYCoordinate() - neighbor.getYCoordinate());
-            
-            if (dist < minEdge.get(neighbor)) {
-                minEdge.put(neighbor, dist);
+            tree.add(best);
+            total += bestDist;
+            for (Coordinate neighbor : nodes) {
+                if (!tree.contains(neighbor)) {
+                    double dist = Math.abs(best.getXCoordinate() - neighbor.getXCoordinate()) + 
+                                    Math.abs(best.getYCoordinate() - neighbor.getYCoordinate());
+                    
+                    if (dist < minEdge.get(neighbor)) {
+                        minEdge.put(neighbor, dist);
+                    }
+                }
             }
-        }
-    }
-}
-
-
-
-
-
-       
-        
+        } 
         return total;
     }
 
@@ -154,7 +155,67 @@ public class PacmanAgent
     @Override
     public Path<PelletVertex> findPathToEatAllPelletsTheFastest(final GameView game)
     {
-        return null;
+        PelletVertex start = new PelletVertex(game);
+        Map<PelletVertex, Float> gScore = new HashMap<>();
+        Path<PelletVertex> startNode = new Path<>(start, 0f, null);
+        PriorityQueue<Path<PelletVertex>> openSet;
+
+        Comparator<Path<PelletVertex>> pathComparator = new Comparator<Path<PelletVertex>>()
+        {
+            @Override
+            public int compare(Path<PelletVertex> a, Path<PelletVertex> b)
+            {
+                float fA = a.getTrueCost() + a.getEstimatedPathCostToGoal(); 
+                float fB = b.getTrueCost() + b.getEstimatedPathCostToGoal();  
+                return Float.compare(fA, fB);
+            }
+        };
+
+        openSet = new PriorityQueue<>(pathComparator);
+
+        if(start.getRemainingPelletCoordinates().isEmpty())
+        {
+            return new Path<>(start, 0f, null);
+        }
+
+        startNode.setEstimatedPathCostToGoal(getHeuristic(start, game));
+        openSet.add(startNode);
+        gScore.put(start, 0f);
+
+        while(!openSet.isEmpty())
+        {
+            Path<PelletVertex> current = openSet.poll();
+            PelletVertex u = current.getDestination();
+
+            if(u.getRemainingPelletCoordinates().isEmpty())
+            {
+                return current;
+            }
+
+            Set<PelletVertex> neighbors = getOutoingNeighbors(u, game);
+
+            for(PelletVertex v: neighbors)
+            {
+                float w = getEdgeWeight(u, v);
+                if(Float.isInfinite(w) || w<0f)
+                {
+                    continue;
+                }
+
+                float newG = current.getTrueCost() + w;
+                Float oldG = gScore.get(v);
+
+                if(oldG==null || newG<oldG)
+                {
+                    Path<PelletVertex> next = new Path<>(v, newG, current);
+                    next.setEstimatedPathCostToGoal(getHeuristic(v, game));
+                    gScore.put(v, newG);
+                    openSet.add(next);
+                }
+            }
+        }
+
+        return new Path<>(start, 0f, null);
     }
 
     @Override
@@ -224,7 +285,7 @@ public class PacmanAgent
         Path<Coordinate> path = graphSearch(src, getTargetCoordinate(), game);
         Stack<Coordinate> stack = new Stack<>();
 
-        while(path!=null) // turning into stack
+        while(path!=null && path.getParentPath()!=null) // turning into stack
         {
             stack.push(path.getDestination());
             path = path.getParentPath();
@@ -236,6 +297,47 @@ public class PacmanAgent
     @Override
     public Action makeMove(final GameView game)
     {
+        Stack<Coordinate> plan = getPlanToGetToTarget();
+        if (plan==null || plan.isEmpty()) 
+        { 
+            return Action.values()[this.getRandom().nextInt(Action.values().length)];
+        }
+        Coordinate curr = game.getEntity(getMyEntityId()).getCurrentCoordinate();
+        Coordinate next = plan.peek();
+        int dx;
+        int dy;
+
+        if(curr.equals(next))
+        {
+            plan.pop();
+            if (plan.isEmpty()) 
+            { 
+                return Action.values()[this.getRandom().nextInt(Action.values().length)];
+            }
+            next = plan.peek();
+        }
+
+        dx = next.getXCoordinate() - curr.getXCoordinate();
+        dy = next.getYCoordinate() - curr.getYCoordinate();
+
+        if(dx==1 && dy==0)  
+        { 
+            return Action.EAST; 
+        }
+        if(dx==-1 && dy==0) 
+        { 
+            return Action.WEST; 
+        }
+        if(dx==0 && dy==-1) 
+        { 
+            return Action.NORTH; 
+        }
+        if(dx==0 && dy==1)  
+        { 
+            return Action.SOUTH;
+        }
+        makePlan(game);
+
         return Action.values()[this.getRandom().nextInt(Action.values().length)];
     }
 
