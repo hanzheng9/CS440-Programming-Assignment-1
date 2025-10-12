@@ -68,6 +68,10 @@ public class PacmanAgent
     {
         final Set<Coordinate> s = src.getRemainingPelletCoordinates();
         final Set<Coordinate> d = dst.getRemainingPelletCoordinates();
+        if (s.size()!=d.size()+1)
+        {
+            return Float.POSITIVE_INFINITY;
+        }
         final Coordinate pac = src.getPacmanCoordinate();
         Coordinate removed = null;
         int diff = 0;
@@ -83,14 +87,6 @@ public class PacmanAgent
                 {
                     break;  
                 }
-            }
-        }
-
-        for(Coordinate c: d) 
-        {
-            if (!s.contains(c))
-            {
-                return Float.POSITIVE_INFINITY;
             }
         }
 
@@ -159,6 +155,9 @@ public class PacmanAgent
         Map<PelletVertex, Float> gScore = new HashMap<>();
         Path<PelletVertex> startNode = new Path<>(start, 0f, null);
         PriorityQueue<Path<PelletVertex>> openSet;
+        Map<PelletVertex, Float> hCache = new HashMap<>(); 
+        Set<PelletVertex> closed = new HashSet<>(); 
+        Map<String, Float> distCache = new HashMap<>();
 
         Comparator<Path<PelletVertex>> pathComparator = new Comparator<Path<PelletVertex>>()
         {
@@ -178,7 +177,9 @@ public class PacmanAgent
             return new Path<>(start, 0f, null);
         }
 
-        startNode.setEstimatedPathCostToGoal(getHeuristic(start, game));
+        float hStart = getHeuristic(start, game);
+        hCache.put(start, hStart);
+        startNode.setEstimatedPathCostToGoal(hStart);
         openSet.add(startNode);
         gScore.put(start, 0f);
 
@@ -186,6 +187,12 @@ public class PacmanAgent
         {
             Path<PelletVertex> current = openSet.poll();
             PelletVertex u = current.getDestination();
+
+            if(closed.contains(u))
+            {
+                continue;
+            }
+            closed.add(u);
 
             if(u.getRemainingPelletCoordinates().isEmpty())
             {
@@ -196,7 +203,52 @@ public class PacmanAgent
 
             for(PelletVertex v: neighbors)
             {
-                float w = getEdgeWeight(u, v);
+                if (closed.contains(v))
+                {
+                    continue;
+                }
+                final Set<Coordinate> su = u.getRemainingPelletCoordinates();
+                final Set<Coordinate> sv = v.getRemainingPelletCoordinates();
+                if(su.size()!=sv.size()+1) 
+                { 
+                    continue; 
+                } 
+                Coordinate removed = null;             
+                int diff = 0;                         
+                for(Coordinate c: su)              
+                {                                       
+                    if(!sv.contains(c))                
+                    {                                   
+                        removed = c;                    
+                        diff++;                         
+                        if (diff > 1) break;            
+                    }                                   
+                }                                       
+                if(diff != 1 || removed == null)       
+                {                                       
+                    continue;                           
+                }                                       
+
+                Coordinate from = u.getPacmanCoordinate();  
+                String cacheKey = from.getXCoordinate() + "," + from.getYCoordinate() + ">" + removed.getXCoordinate() + "," + removed.getYCoordinate();  
+                Float wObj = distCache.get(cacheKey);   
+                float w;                                
+                if(wObj == null)                       
+                {                                       
+                    if(from.equals(removed)) 
+                    {
+                        w = 0f;
+                    }else 
+                    {
+                        Path<Coordinate> sp = graphSearch(from, removed, game);
+                        w = sp.getTrueCost();
+                    }
+                    distCache.put(cacheKey, w);       
+                }                                       
+                else                                    
+                {                                       
+                    w = wObj;                           
+                }  
                 if(Float.isInfinite(w) || w<0f)
                 {
                     continue;
@@ -207,9 +259,10 @@ public class PacmanAgent
 
                 if(oldG==null || newG<oldG)
                 {
+                    float h = hCache.computeIfAbsent(v, pv -> getHeuristic(pv, game));
                     Path<PelletVertex> next = new Path<>(v, newG, current);
-                    next.setEstimatedPathCostToGoal(getHeuristic(v, game));
-                    gScore.put(v, newG);
+                    next.setEstimatedPathCostToGoal(h);
+                    gScore.put(v, newG); 
                     openSet.add(next);
                 }
             }
