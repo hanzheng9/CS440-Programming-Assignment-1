@@ -260,7 +260,7 @@ public class PacmanAgent
                 if(oldG==null || newG<oldG)
                 {
                     float h = hCache.computeIfAbsent(v, pv -> getHeuristic(pv, game));
-                    Path<PelletVertex> next = new Path<>(v, newG, current);
+                    Path<PelletVertex> next = new Path<>(v, w, current);
                     next.setEstimatedPathCostToGoal(h);
                     gScore.put(v, newG); 
                     openSet.add(next);
