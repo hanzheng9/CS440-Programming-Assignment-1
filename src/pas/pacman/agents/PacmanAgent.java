@@ -157,7 +157,7 @@ public class PacmanAgent
         PriorityQueue<Path<PelletVertex>> openSet;
         Map<PelletVertex, Float> hCache = new HashMap<>(); 
         Set<PelletVertex> closed = new HashSet<>(); 
-        Map<String, Float> distCache = new HashMap<>();
+        float hStart;
 
         Comparator<Path<PelletVertex>> pathComparator = new Comparator<Path<PelletVertex>>()
         {
@@ -177,7 +177,7 @@ public class PacmanAgent
             return new Path<>(start, 0f, null);
         }
 
-        float hStart = getHeuristic(start, game);
+        hStart = getHeuristic(start, game);
         hCache.put(start, hStart);
         startNode.setEstimatedPathCostToGoal(hStart);
         openSet.add(startNode);
@@ -209,7 +209,7 @@ public class PacmanAgent
                 }
                 final Set<Coordinate> su = u.getRemainingPelletCoordinates();
                 final Set<Coordinate> sv = v.getRemainingPelletCoordinates();
-                if(su.size()!=sv.size()+1) 
+                if(su==null || sv==null || su.size()!=sv.size()+1) 
                 { 
                     continue; 
                 } 
@@ -221,39 +221,27 @@ public class PacmanAgent
                     {                                   
                         removed = c;                    
                         diff++;                         
-                        if (diff > 1) break;            
+                        if(diff > 1) 
+                        {
+                            break;  
+                        }          
                     }                                   
                 }                                       
                 if(diff != 1 || removed == null)       
                 {                                       
                     continue;                           
-                }                                       
-
+                }                                                                                                 
                 Coordinate from = u.getPacmanCoordinate();  
-                String cacheKey = from.getXCoordinate() + "," + from.getYCoordinate() + ">" + removed.getXCoordinate() + "," + removed.getYCoordinate();  
-                Float wObj = distCache.get(cacheKey);   
-                float w;                                
-                if(wObj == null)                       
-                {                                       
-                    if(from.equals(removed)) 
-                    {
-                        w = 0f;
-                    }else 
-                    {
-                        Path<Coordinate> sp = graphSearch(from, removed, game);
-                        w = sp.getTrueCost();
-                    }
-                    distCache.put(cacheKey, w);       
-                }                                       
-                else                                    
-                {                                       
-                    w = wObj;                           
-                }  
-                if(Float.isInfinite(w) || w<0f)
+                if(from==null)
                 {
                     continue;
                 }
-
+                Path<Coordinate> sp = graphSearch(from, removed, game);
+                float w = sp.getTrueCost();  
+                if(sp==null || Float.isInfinite(w) || w<0f)
+                {
+                    continue;
+                }
                 float newG = current.getTrueCost() + w;
                 Float oldG = gScore.get(v);
 
